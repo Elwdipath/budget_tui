@@ -1,0 +1,16 @@
+Transaction Date,Description,Amount,Type
+12/01/2024,Netflix Subscription,-15.99,Debit
+12/02/2024,Starbucks Coffee,-5.45,Debit
+12/03/2024,Shell Gas Station,-45.00,Debit
+12/05/2024,Whole Foods Market,-87.32,Debit
+12/06/2024,Amazon Purchase,-23.50,Debit
+12/07/2024,Restaurant Dinner,-42.80,Debit
+12/08/2024,ATM Withdrawal,-100.00,Debit
+12/10/2024,Direct Deposit,2500.00,Credit
+12/11/2024,Electric Bill,-85.20,Debit
+12/12/2024,Walmart Shopping,-156.78,Debit
+12/13/2024,CVS Pharmacy,-23.45,Debit
+12/14/2024,Gym Membership,-29.99,Debit
+12/15/2024,Uber Ride,-18.50,Debit
+12/16/2024,Phone Bill,-65.00,Debit
+12/17/2024,Target Store,-67.89,Debit
