@@ -1,6 +1,7 @@
-package main
+package budget
 
 import (
+	"github.com/Elwdipath/budget_tui/internal/storage"
 	"time"
 )
 
@@ -37,7 +38,7 @@ func NewBudget() *Budget {
 
 func (b *Budget) AddTransaction(amount float64, description, category string, tType TransactionType) {
 	transaction := Transaction{
-		ID:          generateID(),
+		ID:          storage.GenerateID(),
 		Amount:      amount,
 		Description: description,
 		Category:    category,

@@ -8,6 +8,12 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+
+	"github.com/Elwdipath/budget_tui/internal/analytics"
+	"github.com/Elwdipath/budget_tui/internal/budget"
+	"github.com/Elwdipath/budget_tui/internal/import"
+	"github.com/Elwdipath/budget_tui/internal/tui"
+	"github.com/Elwdipath/budget_tui/pkg/categorizer"
 )
 
 type state int
@@ -23,7 +29,7 @@ const (
 
 type model struct {
 	state       state
-	budget      *Budget
+	budget      *budget.Budget
 	menuChoices []string
 	menuCursor  int
 
@@ -41,23 +47,23 @@ type model struct {
 	showHelp            bool
 
 	// Import state
-	importFilePath    string
-	importFormat      *CSVFormat
-	importResult      *ImportResult
-	importSession     *ImportSession
-	importHistory     *ImportHistory
-	categorizer       *Categorizer
-	selectedPreview   int
-	showImportDetails bool
-	importStatus      string
+	importFilePath     string
+	importFormat       *import.CSVFormat
+	importResult       *import.ImportResult
+	importSession      *import.ImportSession
+	importHistory      *importhistory.ImportHistory
+	categorizer        *categorizer.Categorizer
+	selectedPreview    int
+	showImportDetails  bool
+	importStatus       string
 }
 
 func initialModel() model {
-	budget, _ := LoadBudget()
-	importHistory, _ := LoadImportHistory()
+	b, _ := budget.LoadBudget()
+	importHistory, _ := importhistory.LoadImportHistory()
 	return model{
 		state:  dashboardState,
-		budget: budget,
+		budget: b,
 		menuChoices: []string{
 			"[i] Income  [e] Expense  [t] Transactions  [b] Import  [h] Help  [q] Quit",
 		},
@@ -68,7 +74,7 @@ func initialModel() model {
 		selectedTransaction: 0,
 		showHelp:            false,
 		importHistory:       importHistory,
-		categorizer:         NewCategorizer(),
+		categorizer:         categorizer.NewCategorizer(),
 		selectedPreview:     0,
 		showImportDetails:   false,
 		importStatus:        "ready",

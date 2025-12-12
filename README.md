@@ -47,18 +47,53 @@ go build .
 ## Project Structure
 
 ```
-├── main.go              # Main application and UI
-├── budget.go            # Budget data model and operations
-├── storage.go           # Data persistence
-├── csv_parser.go        # CSV import and format detection
-├── categorizer.go       # Smart categorization engine
-├── import_history.go    # Import session tracking
-├── dashboard.go         # Dashboard rendering
-├── banner.go            # ASCII art banner
-├── styles.go            # Lipgloss styling
-├── analytics.go         # Budget analytics
-└── sample_bank_statement.csv  # Demo data
+budget_tui/
+├── cmd/
+│   ├── budget_tui.go           # Main application entry point (simplified version)
+│   └── budget_tui_simple.go    # Clean main file for new structure
+├── internal/
+│   ├── budget/
+│   │   ├── budget.go           # Budget data model and operations
+│   │   └── storage.go          # Data persistence (moved from root)
+│   ├── import/
+│   │   ├── csv_parser.go       # CSV import and format detection
+│   │   └── import_history.go   # Import session tracking
+│   ├── tui/
+│   │   ├── banner.go           # ASCII art banner
+│   │   ├── dashboard.go        # Dashboard rendering
+│   │   ├── styles.go           # Original styling (has conflicts)
+│   │   └── components.go       # Clean TUI components
+│   ├── storage/
+│   │   └── storage.go          # Storage utilities
+│   └── analytics/
+│       └── analytics.go        # Budget analytics
+├── pkg/
+│   └── categorizer/
+│       └── categorizer.go      # Smart categorization engine
+├── configs/                    # Configuration files
+├── docs/                       # Documentation
+├── testdata/
+│   └── sample_bank_statement.csv  # Demo data
+├── go.mod                      # Go module file
+├── go.sum                      # Go dependencies
+└── README.md                   # This file
 ```
+
+### Running the Application
+
+**Current Working Version (Flat Structure):**
+```bash
+# Run the original working version from root
+go run main.go
+```
+
+**New Restructured Version (In Progress):**
+```bash
+# Run the restructured version
+cd cmd && go run budget_tui_simple.go
+```
+
+*Note: The directory restructure is in progress. The main working application is still `main.go` in the root directory.*
 
 ## Dependencies
 

@@ -1,4 +1,4 @@
-package main
+package storage
 
 import (
 	"crypto/rand"
@@ -6,9 +6,11 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+
+	"github.com/Elwdipath/budget_tui/internal/budget"
 )
 
-func generateID() string {
+func GenerateID() string {
 	bytes := make([]byte, 4)
 	rand.Read(bytes)
 	return hex.EncodeToString(bytes)
@@ -19,7 +21,7 @@ func getDataFilePath() string {
 	return filepath.Join(homeDir, ".budget_tui.json")
 }
 
-func (b *Budget) Save() error {
+func SaveBudget(b *budget.Budget) error {
 	data, err := json.MarshalIndent(b, "", "  ")
 	if err != nil {
 		return err
@@ -27,10 +29,10 @@ func (b *Budget) Save() error {
 	return os.WriteFile(getDataFilePath(), data, 0644)
 }
 
-func LoadBudget() (*Budget, error) {
+func LoadBudget() (*budget.Budget, error) {
 	filePath := getDataFilePath()
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		return NewBudget(), nil
+		return budget.NewBudget(), nil
 	}
 
 	data, err := os.ReadFile(filePath)
@@ -38,11 +40,11 @@ func LoadBudget() (*Budget, error) {
 		return nil, err
 	}
 
-	var budget Budget
-	err = json.Unmarshal(data, &budget)
+	var b budget.Budget
+	err = json.Unmarshal(data, &b)
 	if err != nil {
-		return NewBudget(), nil
+		return budget.NewBudget(), nil
 	}
 
-	return &budget, nil
+	return &b, nil
 }

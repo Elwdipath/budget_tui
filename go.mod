@@ -1,4 +1,4 @@
-module budget_tui
+module github.com/Elwdipath/budget_tui
 
 go 1.24.0
 

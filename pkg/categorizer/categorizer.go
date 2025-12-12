@@ -1,4 +1,4 @@
-package main
+package categorizer
 
 import (
 	"encoding/json"
