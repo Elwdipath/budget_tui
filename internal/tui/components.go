@@ -16,7 +16,10 @@ var (
 	// Styles
 	positiveStyle = lipgloss.NewStyle().Foreground(greenColor).Bold(true)
 	negativeStyle = lipgloss.NewStyle().Foreground(redColor).Bold(true)
+	neutralStyle  = lipgloss.NewStyle().Foreground(yellowColor)
 	titleStyle    = lipgloss.NewStyle().Bold(true).Foreground(blueColor).Underline(true)
+	borderStyle   = lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).Padding(1, 2)
+	helpStyle     = lipgloss.NewStyle().Foreground(grayColor)
 
 	// Panel styles
 	summaryPanelStyle = lipgloss.NewStyle().
@@ -71,7 +74,10 @@ func GetSubtitle() string {
 // Export styles and colors for use in main
 func GetPositiveStyle() lipgloss.Style          { return positiveStyle }
 func GetNegativeStyle() lipgloss.Style          { return negativeStyle }
+func GetNeutralStyle() lipgloss.Style           { return neutralStyle }
 func GetTitleStyle() lipgloss.Style             { return titleStyle }
+func GetBorderStyle() lipgloss.Style            { return borderStyle }
+func GetHelpStyle() lipgloss.Style              { return helpStyle }
 func GetSummaryPanelStyle() lipgloss.Style      { return summaryPanelStyle }
 func GetCategoryPanelStyle() lipgloss.Style     { return categoryPanelStyle }
 func GetTransactionsPanelStyle() lipgloss.Style { return transactionsPanelStyle }

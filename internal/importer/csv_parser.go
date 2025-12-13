@@ -1,4 +1,4 @@
-package import
+package importer
 
 import (
 	"encoding/csv"
@@ -8,6 +8,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/Elwdipath/budget_tui/internal/budget"
+	"github.com/Elwdipath/budget_tui/pkg/categorizer"
 )
 
 type CSVFormat struct {
@@ -66,11 +69,11 @@ var CommonFormats = []CSVFormat{
 }
 
 type ImportResult struct {
-	Transactions []Transaction `json:"transactions"`
-	Format       CSVFormat     `json:"format"`
-	Errors       []string      `json:"errors"`
-	TotalRows    int           `json:"total_rows"`
-	SuccessCount int           `json:"success_count"`
+	Transactions []budget.Transaction `json:"transactions"`
+	Format       CSVFormat            `json:"format"`
+	Errors       []string             `json:"errors"`
+	TotalRows    int                  `json:"total_rows"`
+	SuccessCount int                  `json:"success_count"`
 }
 
 func DetectCSVFormat(filePath string) (*CSVFormat, error) {
@@ -156,7 +159,7 @@ func ParseCSV(filePath string, format *CSVFormat) (*ImportResult, error) {
 	}
 
 	result := &ImportResult{
-		Transactions: []Transaction{},
+		Transactions: []budget.Transaction{},
 		Format:       *format,
 		Errors:       []string{},
 		TotalRows:    len(records),
@@ -195,27 +198,27 @@ func ParseCSV(filePath string, format *CSVFormat) (*ImportResult, error) {
 		}
 
 		// Determine transaction type
-		var transType TransactionType
+		var transType budget.TransactionType
 		description := strings.TrimSpace(row[format.DescriptionColumn])
 
 		if format.AmountIsNegative {
 			if amount < 0 {
-				transType = Expense
+				transType = budget.Expense
 				amount = -amount
 			} else {
-				transType = Income
+				transType = budget.Income
 			}
 		} else {
 			// For formats where expenses are positive but we need to determine type from description
 			if isIncomeDescription(description) {
-				transType = Income
+				transType = budget.Income
 			} else {
-				transType = Expense
+				transType = budget.Expense
 			}
 		}
 
-		transaction := Transaction{
-			ID:                  generateID(),
+		transaction := budget.Transaction{
+			ID:                  budget.GenerateID(),
 			Amount:              amount,
 			Description:         description,
 			OriginalDescription: description,
@@ -268,7 +271,7 @@ func GetImportPreview(filePath string, format *CSVFormat, maxRows int) ([]Previe
 		count = len(result.Transactions)
 	}
 
-	categorizer := NewCategorizer()
+	categorizer := categorizer.NewCategorizer()
 
 	for i := 0; i < count; i++ {
 		t := result.Transactions[i]

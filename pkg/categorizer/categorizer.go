@@ -7,17 +7,19 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/Elwdipath/budget_tui/internal/budget"
 )
 
 type CategorizationRule struct {
-	Pattern         string          `json:"pattern"`
-	Category        string          `json:"category"`
-	MinAmount       float64         `json:"min_amount,omitempty"`
-	MaxAmount       float64         `json:"max_amount,omitempty"`
-	Keywords        []string        `json:"keywords,omitempty"`
-	Priority        int             `json:"priority"`
-	IsActive        bool            `json:"is_active"`
-	TransactionType TransactionType `json:"transaction_type,omitempty"`
+	Pattern         string                 `json:"pattern"`
+	Category        string                 `json:"category"`
+	MinAmount       float64                `json:"min_amount,omitempty"`
+	MaxAmount       float64                `json:"max_amount,omitempty"`
+	Keywords        []string               `json:"keywords,omitempty"`
+	Priority        int                    `json:"priority"`
+	IsActive        bool                   `json:"is_active"`
+	TransactionType budget.TransactionType `json:"transaction_type,omitempty"`
 }
 
 type CategoryConfig struct {
@@ -228,7 +230,7 @@ func (c *Categorizer) getDefaultRules() []CategorizationRule {
 			Category:        "Salary",
 			Priority:        100,
 			IsActive:        true,
-			TransactionType: Income,
+			TransactionType: budget.Income,
 			Keywords:        []string{"salary", "payroll", "paycheck"},
 		},
 		{
@@ -236,7 +238,7 @@ func (c *Categorizer) getDefaultRules() []CategorizationRule {
 			Category:        "Deposits",
 			Priority:        80,
 			IsActive:        true,
-			TransactionType: Income,
+			TransactionType: budget.Income,
 			Keywords:        []string{"deposit"},
 		},
 
@@ -258,7 +260,7 @@ func (c *Categorizer) getDefaultRules() []CategorizationRule {
 	}
 }
 
-func (c *Categorizer) CategorizeTransaction(description string, amount float64, transType TransactionType) (string, float64) {
+func (c *Categorizer) CategorizeTransaction(description string, amount float64, transType budget.TransactionType) (string, float64) {
 	description = strings.ToLower(strings.TrimSpace(description))
 	bestMatch := "Uncategorized"
 	bestConfidence := 0.0

@@ -3,6 +3,8 @@ package analytics
 import (
 	"sort"
 	"time"
+
+	"github.com/Elwdipath/budget_tui/internal/budget"
 )
 
 type CategorySpending struct {
@@ -11,11 +13,11 @@ type CategorySpending struct {
 	Count    int
 }
 
-func (b *Budget) GetSpendingByCategory() []CategorySpending {
+func GetSpendingByCategory(b *budget.Budget) []CategorySpending {
 	categoryTotals := make(map[string]CategorySpending)
 
 	for _, t := range b.Transactions {
-		if t.Type == Expense {
+		if t.Type == budget.Expense {
 			if existing, ok := categoryTotals[t.Category]; ok {
 				existing.Amount += t.Amount
 				existing.Count++
@@ -42,12 +44,12 @@ func (b *Budget) GetSpendingByCategory() []CategorySpending {
 	return result
 }
 
-func (b *Budget) GetRecentTransactions(limit int) []Transaction {
+func GetRecentTransactions(b *budget.Budget, limit int) []budget.Transaction {
 	if len(b.Transactions) <= limit {
 		return b.Transactions
 	}
 
-	transactions := make([]Transaction, len(b.Transactions))
+	transactions := make([]budget.Transaction, len(b.Transactions))
 	copy(transactions, b.Transactions)
 
 	sort.Slice(transactions, func(i, j int) bool {
@@ -57,14 +59,14 @@ func (b *Budget) GetRecentTransactions(limit int) []Transaction {
 	return transactions[:limit]
 }
 
-func (b *Budget) GetThisMonthTotals() (income, expenses float64) {
+func GetThisMonthTotals(b *budget.Budget) (income, expenses float64) {
 	now := time.Now()
 	currentMonth := now.Month()
 	currentYear := now.Year()
 
 	for _, t := range b.Transactions {
 		if t.Date.Month() == currentMonth && t.Date.Year() == currentYear {
-			if t.Type == Income {
+			if t.Type == budget.Income {
 				income += t.Amount
 			} else {
 				expenses += t.Amount
@@ -74,7 +76,7 @@ func (b *Budget) GetThisMonthTotals() (income, expenses float64) {
 	return income, expenses
 }
 
-func (b *Budget) GetFinancialHealthStatus() string {
+func GetFinancialHealthStatus(b *budget.Budget) string {
 	balance := b.GetBalance()
 	if balance > 0 {
 		return "✅ Financially Healthy"

@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"github.com/charmbracelet/lipgloss"
 	"strings"
+
+	"github.com/Elwdipath/budget_tui/internal/budget"
 )
 
-func renderCategoryBar(category string, amount float64, total float64, width int) string {
+func RenderCategoryBar(category string, amount float64, total float64, width int) string {
 	percentage := (amount / total) * 100
 	barWidth := int((percentage / 100) * float64(width))
 
@@ -19,7 +21,7 @@ func renderCategoryBar(category string, amount float64, total float64, width int
 	return fmt.Sprintf("%-15s %s %6.1f%%", category, bar, percentage)
 }
 
-func renderTransactionTable(transactions []Transaction, cursor int) string {
+func RenderTransactionTable(transactions []budget.Transaction, cursor int) string {
 	if len(transactions) == 0 {
 		return "No transactions yet.\n\nAdd your first transaction to get started!"
 	}
@@ -44,12 +46,12 @@ func renderTransactionTable(transactions []Transaction, cursor int) string {
 		}
 
 		typeStr := "📈 Inc"
-		if t.Type == Expense {
+		if t.Type == budget.Expense {
 			typeStr = "📉 Exp"
 		}
 
 		amountStr := fmt.Sprintf("$%8.2f", t.Amount)
-		if t.Type == Expense {
+		if t.Type == budget.Expense {
 			amountStr = negativeStyle.Render("-" + fmt.Sprintf("$%7.2f", t.Amount))
 		} else {
 			amountStr = positiveStyle.Render(amountStr)
@@ -77,7 +79,7 @@ func renderTransactionTable(transactions []Transaction, cursor int) string {
 	return sb.String()
 }
 
-func renderFinancialSummary(b *Budget) string {
+func RenderFinancialSummary(b *budget.Budget) string {
 	balance := b.GetBalance()
 	income := b.GetTotalIncome()
 	expenses := b.GetTotalExpenses()
@@ -89,10 +91,10 @@ func renderFinancialSummary(b *Budget) string {
 	sb.WriteString(fmt.Sprintf("Balance:   %s\n", balanceStr))
 
 	// Income row
-	sb.WriteString(fmt.Sprintf("Income:    %s\n", positiveStyle.Render("$"+formatAmount(income))))
+	sb.WriteString(fmt.Sprintf("Income:    %s\n", positiveStyle.Render("$"+FormatAmount(income))))
 
 	// Expenses row
-	sb.WriteString(fmt.Sprintf("Expenses:  %s\n", negativeStyle.Render("$"+formatAmount(expenses))))
+	sb.WriteString(fmt.Sprintf("Expenses:  %s\n", negativeStyle.Render("$"+FormatAmount(expenses))))
 
 	// Financial health status
 	status := b.GetFinancialHealthStatus()
@@ -109,4 +111,13 @@ func renderFinancialSummary(b *Budget) string {
 	sb.WriteString(fmt.Sprintf("\n%s", statusStyle.Render(status)))
 
 	return sb.String()
+}
+
+func renderBalance(balance float64) string {
+	amountStr := fmt.Sprintf("$%.2f", balance)
+	if balance >= 0 {
+		return positiveStyle.Render(amountStr)
+	} else {
+		return negativeStyle.Render(amountStr)
+	}
 }

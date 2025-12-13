@@ -9,10 +9,9 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
-	"github.com/Elwdipath/budget_tui/internal/analytics"
 	"github.com/Elwdipath/budget_tui/internal/budget"
-	"github.com/Elwdipath/budget_tui/internal/import"
-	"github.com/Elwdipath/budget_tui/internal/tui"
+	"github.com/Elwdipath/budget_tui/internal/importer"
+	tui "github.com/Elwdipath/budget_tui/internal/tui"
 	"github.com/Elwdipath/budget_tui/pkg/categorizer"
 )
 
@@ -47,20 +46,35 @@ type model struct {
 	showHelp            bool
 
 	// Import state
-	importFilePath     string
-	importFormat       *import.CSVFormat
-	importResult       *import.ImportResult
-	importSession      *import.ImportSession
-	importHistory      *importhistory.ImportHistory
-	categorizer        *categorizer.Categorizer
-	selectedPreview    int
-	showImportDetails  bool
-	importStatus       string
+	importFilePath    string
+	importFormat      *importer.CSVFormat
+	importResult      *importer.ImportResult
+	importSession     *importer.ImportSession
+	importHistory     *importer.ImportHistory
+	categorizer       *categorizer.Categorizer
+	selectedPreview   int
+	showImportDetails bool
+	importStatus      string
 }
+
+// Styles
+var (
+	summaryPanelStyle      = tui.GetSummaryPanelStyle()
+	categoryPanelStyle     = tui.GetCategoryPanelStyle()
+	transactionsPanelStyle = tui.GetTransactionsPanelStyle()
+	borderStyle            = tui.GetBorderStyle()
+	helpStyle              = tui.GetHelpStyle()
+	neutralStyle           = tui.GetNeutralStyle()
+	titleStyle             = tui.GetTitleStyle()
+	positiveStyle          = tui.GetPositiveStyle()
+	negativeStyle          = tui.GetNegativeStyle()
+	blueColor              = tui.GetBlueColor()
+	grayColor              = tui.GetGrayColor()
+)
 
 func initialModel() model {
 	b, _ := budget.LoadBudget()
-	importHistory, _ := importhistory.LoadImportHistory()
+	importHistory, _ := importer.LoadImportHistory()
 	return model{
 		state:  dashboardState,
 		budget: b,
@@ -176,9 +190,9 @@ func (m model) updateAddTransactionForm(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			var amount float64
 			fmt.Sscanf(m.amountInput, "%f", &amount)
 
-			tType := Income
+			tType := budget.Income
 			if m.state == addExpenseState {
-				tType = Expense
+				tType = budget.Expense
 			}
 
 			m.budget.AddTransaction(amount, m.descriptionInput, m.categoryInput, tType)
@@ -225,8 +239,8 @@ func (m model) updateImportState(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		if m.importFilePath != "" {
 			// Start import process
 			m.importStatus = "detecting"
-			m.importSession = &ImportSession{
-				ID:         generateID(),
+			m.importSession = &importer.ImportSession{
+				ID:         budget.GenerateID(),
 				FileName:   m.importFilePath,
 				Source:     "Unknown",
 				Status:     "reviewing",
@@ -237,7 +251,7 @@ func (m model) updateImportState(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			}
 
 			// Detect format
-			format, err := DetectCSVFormat(m.importFilePath)
+			format, err := importer.DetectCSVFormat(m.importFilePath)
 			if err != nil {
 				m.importStatus = "error: " + err.Error()
 				return m, nil
@@ -247,7 +261,7 @@ func (m model) updateImportState(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			m.importSession.Source = format.Name
 
 			// Parse and preview
-			result, err := ParseCSV(m.importFilePath, format)
+			result, err := importer.ParseCSV(m.importFilePath, format)
 			if err != nil {
 				m.importStatus = "error: " + err.Error()
 				return m, nil
@@ -257,7 +271,7 @@ func (m model) updateImportState(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			m.importSession.TotalCount = len(result.Transactions)
 
 			// Generate preview
-			preview, _ := GetImportPreview(m.importFilePath, format, 10)
+			preview, _ := importer.GetImportPreview(m.importFilePath, format, 10)
 			m.importSession.Preview = preview
 
 			m.state = reviewState
@@ -361,11 +375,11 @@ func (m model) View() string {
 
 func (m model) viewDashboard() string {
 	// Hero Banner
-	heroBanner := getHeroBanner()
-	subtitle := getSubtitle()
+	heroBanner := tui.GetHeroBanner()
+	subtitle := tui.GetSubtitle()
 
 	// Financial Summary Panel
-	summaryContent := renderFinancialSummary(m.budget)
+	summaryContent := tui.RenderFinancialSummary(m.budget)
 	summaryPanel := summaryPanelStyle.Render(summaryContent)
 
 	// Category Spending Panel
@@ -386,14 +400,14 @@ func (m model) viewDashboard() string {
 
 		for i := 0; i < maxDisplay; i++ {
 			cat := categories[i]
-			bar := renderCategoryBar(cat.Category, cat.Amount, totalExpenses, 15)
+			bar := tui.RenderCategoryBar(cat.Category, cat.Amount, totalExpenses, 15)
 
 			if i == m.dashboardCursor {
 				bar = positiveStyle.Render("►") + bar[1:]
 			}
 
 			sb.WriteString(bar + "\n")
-			sb.WriteString(fmt.Sprintf("           $%s (%d items)\n\n", formatAmount(cat.Amount), cat.Count))
+			sb.WriteString(fmt.Sprintf("           $%s (%d items)\n\n", tui.FormatAmount(cat.Amount), cat.Count))
 		}
 
 		if len(categories) > maxDisplay {
@@ -410,7 +424,7 @@ func (m model) viewDashboard() string {
 
 	// Recent Transactions Panel
 	recentTransactions := m.budget.GetRecentTransactions(10)
-	transactionsContent := renderTransactionTable(recentTransactions, m.selectedTransaction)
+	transactionsContent := tui.RenderTransactionTable(recentTransactions, m.selectedTransaction)
 	transactionsPanel := transactionsPanelStyle.Render(transactionsContent)
 
 	// Layout panels
@@ -430,13 +444,13 @@ func (m model) viewDashboard() string {
 	menuBar := lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).
 		Padding(0, 1).
-		Foreground(blueColor).
+		Foreground(tui.GetBlueColor()).
 		Render(strings.Join(m.menuChoices, " • "))
 
 	// Add help text if requested
 	var helpText string
 	if m.showHelp {
-		helpText = "\n" + helpStyle.Render("Controls: ↑↓/j/k: Navigate categories | Use shortcuts below menu | h: Toggle help")
+		helpText = "\n" + tui.GetHelpStyle().Render("Controls: ↑↓/j/k: Navigate categories | Use shortcuts below menu | h: Toggle help")
 	}
 
 	// Combine dashboard and menu
@@ -446,7 +460,7 @@ func (m model) viewDashboard() string {
 }
 
 func (m model) viewImportState() string {
-	title := titleStyle.Render("📁 Import Bank Statement")
+	title := tui.GetTitleStyle().Render("📁 Import Bank Statement")
 
 	var content strings.Builder
 
@@ -477,7 +491,7 @@ Note: This is a demo version. In production, you'll be able to browse files.
 	content.WriteString(instructions)
 
 	// Navigation
-	nav := helpStyle.Render("Tab: Set file path • Enter: Import • q/esc: Back to dashboard")
+	nav := tui.GetHelpStyle().Render("Tab: Set file path • Enter: Import • q/esc: Back to dashboard")
 
 	panel := borderStyle.Render(content.String())
 
@@ -485,7 +499,7 @@ Note: This is a demo version. In production, you'll be able to browse files.
 }
 
 func (m model) viewReviewState() string {
-	title := titleStyle.Render("🔍 Review Import")
+	title := tui.GetTitleStyle().Render("🔍 Review Import")
 
 	var content strings.Builder
 
@@ -545,13 +559,13 @@ func (m model) viewReviewState() string {
 	// Instructions
 	instructions := `
 Navigation:
-↑↓/j/k: Navigate transactions  
+↑↓/j/k: Navigate transactions
 c: Confirm and import
 d: Toggle details
 q/esc: Cancel and return to dashboard
 `
 
-	content.WriteString(helpStyle.Render(instructions))
+	content.WriteString(tui.GetHelpStyle().Render(instructions))
 
 	panel := borderStyle.Render(content.String())
 
@@ -650,7 +664,7 @@ func (m model) viewTransactions() string {
 			}
 
 			symbol := "📈"
-			if t.Type == Expense {
+			if t.Type == budget.Expense {
 				symbol = "📉"
 			}
 
